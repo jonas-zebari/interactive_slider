@@ -21,7 +21,7 @@ class InteractiveSlider extends StatefulWidget {
     this.initialProgress = 0.0,
     required this.onChanged,
     this.iconGap = 8.0,
-    this.iconCrossAxisAlignment = CrossAxisAlignment.start,
+    this.iconCrossAxisAlignment = CrossAxisAlignment.center,
     this.style,
   });
 
