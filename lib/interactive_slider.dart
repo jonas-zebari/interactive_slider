@@ -12,7 +12,7 @@ class InteractiveSlider extends StatefulWidget {
     this.endIcon,
     this.transitionDuration = const Duration(milliseconds: 750),
     this.transitionCurve = const ElasticOutCurve(0.8),
-    this.backgroundColor = Colors.black12,
+    this.backgroundColor,
     this.foregroundColor,
     this.shapeBorder = const StadiumBorder(),
     this.unfocusedHeight = 10.0,
@@ -30,7 +30,7 @@ class InteractiveSlider extends StatefulWidget {
   final Duration transitionDuration;
   final Curve transitionCurve;
   final Color? foregroundColor;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final ShapeBorder shapeBorder;
   final double unfocusedHeight;
   final double focusedHeight;
@@ -74,7 +74,10 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           height: _height.value,
           duration: widget.transitionDuration,
           curve: widget.transitionCurve,
-          decoration: ShapeDecoration(shape: widget.shapeBorder, color: widget.backgroundColor),
+          decoration: ShapeDecoration(
+            shape: widget.shapeBorder,
+            color: widget.backgroundColor ?? (theme.brightness == Brightness.light ? Colors.black12 : Colors.white12),
+          ),
           child: child,
         );
       },
