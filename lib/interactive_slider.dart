@@ -17,10 +17,12 @@ class InteractiveSlider extends StatefulWidget {
     this.shapeBorder = const StadiumBorder(),
     this.unfocusedHeight = 10.0,
     this.focusedHeight = 20.0,
+    this.unfocusedOpacity = 0.4,
     this.initialProgress = 0.0,
     required this.onChanged,
     this.iconGap = 8.0,
     this.iconCrossAxisAlignment = CrossAxisAlignment.start,
+    this.style,
   });
 
   final EdgeInsets margin;
@@ -34,10 +36,12 @@ class InteractiveSlider extends StatefulWidget {
   final ShapeBorder shapeBorder;
   final double unfocusedHeight;
   final double focusedHeight;
+  final double unfocusedOpacity;
   final double initialProgress;
   final ValueChanged<double> onChanged;
   final double iconGap;
   final CrossAxisAlignment iconCrossAxisAlignment;
+  final TextStyle? style;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -95,33 +99,36 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     if (widget.startIcon != null || widget.centerIcon != null || widget.endIcon != null) {
       slider = IconTheme(
         data: theme.iconTheme.copyWith(color: theme.primaryColor),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: widget.iconGap),
-              child: slider,
-            ),
-            Row(
-              crossAxisAlignment: widget.iconCrossAxisAlignment,
-              children: [
-                if (widget.startIcon case var startIcon?)
-                  ValueListenableBuilder<double>(
-                    valueListenable: _opacity,
-                    builder: _opacityBuilder,
-                    child: startIcon,
-                  ),
-                const Spacer(),
-                if (widget.centerIcon case var centerIcon?) centerIcon,
-                const Spacer(),
-                if (widget.endIcon case var endIcon?)
-                  ValueListenableBuilder<double>(
-                    valueListenable: _opacity,
-                    builder: _opacityBuilder,
-                    child: endIcon,
-                  ),
-              ],
-            ),
-          ],
+        child: DefaultTextStyle(
+          style: widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle(),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(bottom: widget.iconGap),
+                child: slider,
+              ),
+              Row(
+                crossAxisAlignment: widget.iconCrossAxisAlignment,
+                children: [
+                  if (widget.startIcon case var startIcon?)
+                    ValueListenableBuilder<double>(
+                      valueListenable: _opacity,
+                      builder: _opacityBuilder,
+                      child: startIcon,
+                    ),
+                  const Spacer(),
+                  if (widget.centerIcon case var centerIcon?) centerIcon,
+                  const Spacer(),
+                  if (widget.endIcon case var endIcon?)
+                    ValueListenableBuilder<double>(
+                      valueListenable: _opacity,
+                      builder: _opacityBuilder,
+                      child: endIcon,
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -135,13 +142,13 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         },
         onHorizontalDragEnd: (details) {
           _height.value = widget.unfocusedHeight;
-          _opacity.value = 0.5;
+          _opacity.value = widget.unfocusedOpacity;
         },
         onHorizontalDragUpdate: (details) {
           if (!mounted) return;
           final renderBox = context.findRenderObject() as RenderBox;
           final sliderWidth = renderBox.size.width - widget.margin.horizontal;
-          _progress.value = (_progress.value + details.delta.dx / sliderWidth).clamp(0.0, 1.0);
+          _progress.value = (_progress.value + (details.delta.dx / sliderWidth)).clamp(0.0, 1.0);
         },
         child: slider,
       ),
