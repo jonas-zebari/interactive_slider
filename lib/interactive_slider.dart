@@ -1,7 +1,31 @@
 library interactive_slider;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
+import 'package:flutter/material.dart';
+
+class InteractiveSlider extends StatefulWidget {
+  const InteractiveSlider({super.key});
+
+  @override
+  State<InteractiveSlider> createState() => _InteractiveSliderState();
+}
+
+class _InteractiveSliderState extends State<InteractiveSlider> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
 }
