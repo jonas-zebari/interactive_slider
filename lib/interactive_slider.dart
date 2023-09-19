@@ -137,10 +137,12 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onHorizontalDragStart: (details) {
+          if (!mounted) return;
           _height.value = widget.focusedHeight;
           _opacity.value = 1.0;
         },
         onHorizontalDragEnd: (details) {
+          if (!mounted) return;
           _height.value = widget.unfocusedHeight;
           _opacity.value = widget.unfocusedOpacity;
         },
