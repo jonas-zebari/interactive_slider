@@ -32,7 +32,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _value = 0.5;
+  final _controller = InteractiveSliderController(0.0);
 
   @override
   Widget build(BuildContext context) {
@@ -45,18 +45,22 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_value.toStringAsPrecision(2), style: Theme.of(context).textTheme.headlineLarge),
+            ValueListenableBuilder<double>(
+              valueListenable: _controller,
+              builder: (context, progress, _) {
+                return Text(progress.toStringAsPrecision(2), style: Theme.of(context).textTheme.headlineLarge);
+              },
+            ),
+            ElevatedButton(
+              onPressed: () => _controller.value = 0.0,
+              child: const Text('Reset'),
+            ),
             InteractiveSlider(
+              controller: _controller,
               margin: const EdgeInsets.all(16),
               startIcon: const Icon(CupertinoIcons.volume_down),
               centerIcon: const Text('Center'),
               endIcon: const Icon(CupertinoIcons.volume_up),
-              initialProgress: _value,
-              onChanged: (value) {
-                setState(() {
-                  _value = value;
-                });
-              },
             ),
           ],
         ),

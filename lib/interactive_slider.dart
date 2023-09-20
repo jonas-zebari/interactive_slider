@@ -1,7 +1,10 @@
 library interactive_slider;
 
 import 'package:flutter/material.dart';
+import 'package:interactive_slider/interactive_slider_controller.dart';
 import 'package:interactive_slider/interactive_slider_painter.dart';
+
+export 'package:interactive_slider/interactive_slider_controller.dart';
 
 class InteractiveSlider extends StatefulWidget {
   const InteractiveSlider({
@@ -19,10 +22,11 @@ class InteractiveSlider extends StatefulWidget {
     this.focusedHeight = 20.0,
     this.unfocusedOpacity = 0.4,
     this.initialProgress = 0.0,
-    required this.onChanged,
+    this.onChanged,
     this.iconGap = 8.0,
     this.iconCrossAxisAlignment = CrossAxisAlignment.center,
     this.style,
+    this.controller,
   });
 
   final EdgeInsets margin;
@@ -38,10 +42,11 @@ class InteractiveSlider extends StatefulWidget {
   final double focusedHeight;
   final double unfocusedOpacity;
   final double initialProgress;
-  final ValueChanged<double> onChanged;
+  final ValueChanged<double>? onChanged;
   final double iconGap;
   final CrossAxisAlignment iconCrossAxisAlignment;
   final TextStyle? style;
+  final InteractiveSliderController? controller;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -50,7 +55,7 @@ class InteractiveSlider extends StatefulWidget {
 class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(0.5);
-  late final _progress = ValueNotifier(widget.initialProgress);
+  late final _progress = widget.controller ?? ValueNotifier(widget.initialProgress);
 
   @override
   void initState() {
@@ -166,5 +171,5 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     );
   }
 
-  void _onChanged() => widget.onChanged(_progress.value);
+  void _onChanged() => widget.onChanged?.call(_progress.value);
 }
