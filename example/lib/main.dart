@@ -14,7 +14,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          brightness: Brightness.dark,
+          seedColor: Colors.deepPurple,
+        ),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -61,6 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
               startIcon: const Icon(CupertinoIcons.volume_down),
               centerIcon: const Text('Center'),
               endIcon: const Icon(CupertinoIcons.volume_up),
+              foregroundColor: Colors.white,
+              iconColor: Colors.white,
             ),
           ],
         ),

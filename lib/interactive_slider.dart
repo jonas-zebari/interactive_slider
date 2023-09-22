@@ -27,6 +27,7 @@ class InteractiveSlider extends StatefulWidget {
     this.iconCrossAxisAlignment = CrossAxisAlignment.center,
     this.style,
     this.controller,
+    this.iconColor,
   });
 
   final EdgeInsets margin;
@@ -47,6 +48,7 @@ class InteractiveSlider extends StatefulWidget {
   final CrossAxisAlignment iconCrossAxisAlignment;
   final TextStyle? style;
   final InteractiveSliderController? controller;
+  final Color? iconColor;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -103,7 +105,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     );
     if (widget.startIcon != null || widget.centerIcon != null || widget.endIcon != null) {
       slider = IconTheme(
-        data: theme.iconTheme.copyWith(color: theme.primaryColor),
+        data: theme.iconTheme.copyWith(color: widget.iconColor ?? theme.primaryColor),
         child: DefaultTextStyle(
           style: widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle(),
           child: Column(
