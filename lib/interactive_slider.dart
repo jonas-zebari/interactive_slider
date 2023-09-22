@@ -56,7 +56,7 @@ class InteractiveSlider extends StatefulWidget {
 
 class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _height = ValueNotifier(widget.unfocusedHeight);
-  late final _opacity = ValueNotifier(0.5);
+  late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _progress = widget.controller ?? ValueNotifier(widget.initialProgress);
 
   @override
