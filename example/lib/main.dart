@@ -36,6 +36,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _controller = InteractiveSliderController(0.0);
+  var _value = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +52,15 @@ class _MyHomePageState extends State<MyHomePage> {
             ValueListenableBuilder<double>(
               valueListenable: _controller,
               builder: (context, progress, _) {
-                return Text(progress.toStringAsPrecision(2), style: Theme.of(context).textTheme.headlineLarge);
+                return Text(
+                  'Normal: ${progress.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.headlineLarge,
+                );
               },
+            ),
+            Text(
+              'Transformed: ${_value.toStringAsFixed(2)}',
+              style: Theme.of(context).textTheme.headlineLarge,
             ),
             ElevatedButton(
               onPressed: () => _controller.value = 0.0,
@@ -66,6 +74,9 @@ class _MyHomePageState extends State<MyHomePage> {
               endIcon: const Icon(CupertinoIcons.volume_up),
               foregroundColor: Colors.white,
               iconColor: Colors.white,
+              min: 1.0,
+              max: 15.0,
+              onChanged: (value) => setState(() => _value = value),
             ),
           ],
         ),

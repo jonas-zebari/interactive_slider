@@ -1,5 +1,7 @@
 library interactive_slider;
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:interactive_slider/interactive_slider_controller.dart';
 import 'package:interactive_slider/interactive_slider_painter.dart';
@@ -28,6 +30,8 @@ class InteractiveSlider extends StatefulWidget {
     this.style,
     this.controller,
     this.iconColor,
+    this.min = 0.0,
+    this.max = 1.0,
   });
 
   final EdgeInsets margin;
@@ -49,6 +53,8 @@ class InteractiveSlider extends StatefulWidget {
   final TextStyle? style;
   final InteractiveSliderController? controller;
   final Color? iconColor;
+  final double min;
+  final double max;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -173,5 +179,5 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     );
   }
 
-  void _onChanged() => widget.onChanged?.call(_progress.value);
+  void _onChanged() => widget.onChanged?.call(lerpDouble(widget.min, widget.max, _progress.value) ?? _progress.value);
 }
