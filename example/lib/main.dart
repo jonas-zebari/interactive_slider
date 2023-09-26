@@ -68,7 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             InteractiveSlider(
               controller: _controller,
-              margin: const EdgeInsets.all(16),
               startIcon: const Icon(CupertinoIcons.volume_down),
               centerIcon: const Text('Center'),
               endIcon: const Icon(CupertinoIcons.volume_up),

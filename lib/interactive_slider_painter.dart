@@ -17,7 +17,6 @@ class InteractiveSliderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(InteractiveSliderPainter oldDelegate) {
-    return progress.value != oldDelegate.progress.value || _paint != oldDelegate._paint;
-  }
+  bool shouldRepaint(InteractiveSliderPainter oldDelegate) =>
+      progress.value != oldDelegate.progress.value || _paint.color != oldDelegate._paint.color;
 }

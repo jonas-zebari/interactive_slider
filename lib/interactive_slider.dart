@@ -11,7 +11,9 @@ export 'package:interactive_slider/interactive_slider_controller.dart';
 class InteractiveSlider extends StatefulWidget {
   const InteractiveSlider({
     super.key,
-    this.margin = EdgeInsets.zero,
+    this.padding = const EdgeInsets.all(16),
+    this.unfocusedMargin = const EdgeInsets.symmetric(horizontal: 16),
+    this.focusedMargin = EdgeInsets.zero,
     this.startIcon,
     this.centerIcon,
     this.endIcon,
@@ -34,7 +36,9 @@ class InteractiveSlider extends StatefulWidget {
     this.max = 1.0,
   });
 
-  final EdgeInsets margin;
+  final EdgeInsets padding;
+  final EdgeInsets unfocusedMargin;
+  final EdgeInsets focusedMargin;
   final Widget? startIcon;
   final Widget? centerIcon;
   final Widget? endIcon;
@@ -63,6 +67,7 @@ class InteractiveSlider extends StatefulWidget {
 class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(widget.unfocusedOpacity);
+  late final _margin = ValueNotifier(widget.unfocusedMargin);
   late final _progress = widget.controller ?? ValueNotifier(widget.initialProgress);
 
   @override
@@ -146,26 +151,39 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       );
     }
     return Padding(
-      padding: widget.margin,
+      padding: widget.padding,
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onHorizontalDragStart: (details) {
           if (!mounted) return;
           _height.value = widget.focusedHeight;
           _opacity.value = 1.0;
+          _margin.value = widget.focusedMargin;
         },
         onHorizontalDragEnd: (details) {
           if (!mounted) return;
           _height.value = widget.unfocusedHeight;
           _opacity.value = widget.unfocusedOpacity;
+          _margin.value = widget.unfocusedMargin;
         },
         onHorizontalDragUpdate: (details) {
           if (!mounted) return;
           final renderBox = context.findRenderObject() as RenderBox;
-          final sliderWidth = renderBox.size.width - widget.margin.horizontal;
+          final sliderWidth = renderBox.size.width - widget.padding.horizontal;
           _progress.value = (_progress.value + (details.delta.dx / sliderWidth)).clamp(0.0, 1.0);
         },
-        child: slider,
+        child: ValueListenableBuilder<EdgeInsets>(
+          valueListenable: _margin,
+          child: slider,
+          builder: (context, margin, child) {
+            return AnimatedPadding(
+              duration: widget.transitionDuration,
+              curve: widget.transitionCurve,
+              padding: margin,
+              child: child,
+            );
+          },
+        ),
       ),
     );
   }
