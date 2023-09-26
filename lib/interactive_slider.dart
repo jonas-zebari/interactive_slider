@@ -34,6 +34,7 @@ class InteractiveSlider extends StatefulWidget {
     this.iconColor,
     this.min = 0.0,
     this.max = 1.0,
+    this.brightness,
   });
 
   final EdgeInsets padding;
@@ -59,6 +60,7 @@ class InteractiveSlider extends StatefulWidget {
   final Color? iconColor;
   final double min;
   final double max;
+  final Brightness? brightness;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -87,6 +89,8 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = widget.brightness ?? (theme.brightness == Brightness.light ? Brightness.dark : Brightness.light);
+    final brightnessColor = brightness == Brightness.light ? Colors.white : Colors.black;
     Widget slider = ValueListenableBuilder<double>(
       valueListenable: _height,
       builder: (context, height, child) {
@@ -98,7 +102,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           curve: widget.transitionCurve,
           decoration: ShapeDecoration(
             shape: widget.shapeBorder,
-            color: widget.backgroundColor ?? (theme.brightness == Brightness.light ? Colors.black12 : Colors.white12),
+            color: widget.backgroundColor ?? brightnessColor.withOpacity(0.12),
           ),
           child: child,
         );
@@ -109,16 +113,18 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         child: CustomPaint(
           painter: InteractiveSliderPainter(
             progress: _progress,
-            color: widget.foregroundColor ?? theme.primaryColor,
+            color: widget.foregroundColor ?? brightnessColor,
           ),
         ),
       ),
     );
     if (widget.startIcon != null || widget.centerIcon != null || widget.endIcon != null) {
       slider = IconTheme(
-        data: theme.iconTheme.copyWith(color: widget.iconColor ?? theme.primaryColor),
+        data: theme.iconTheme.copyWith(color: widget.iconColor ?? widget.foregroundColor ?? brightnessColor),
         child: DefaultTextStyle(
-          style: widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle(),
+          style: (widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
+            color: widget.foregroundColor ?? brightnessColor,
+          ),
           child: Column(
             children: [
               Padding(
@@ -133,7 +139,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                       valueListenable: _opacity,
                       builder: _opacityBuilder,
                       child: startIcon,
-                    ),
+                    )
+                  else if (widget.endIcon case var endIcon?)
+                    Visibility.maintain(visible: false, child: endIcon),
                   const Spacer(),
                   if (widget.centerIcon case var centerIcon?) centerIcon,
                   const Spacer(),
@@ -142,7 +150,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                       valueListenable: _opacity,
                       builder: _opacityBuilder,
                       child: endIcon,
-                    ),
+                    )
+                  else if (widget.startIcon case var startIcon?)
+                    Visibility.maintain(visible: false, child: startIcon),
                 ],
               ),
             ],

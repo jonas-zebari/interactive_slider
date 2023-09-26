@@ -71,8 +71,6 @@ class _MyHomePageState extends State<MyHomePage> {
               startIcon: const Icon(CupertinoIcons.volume_down),
               centerIcon: const Text('Center'),
               endIcon: const Icon(CupertinoIcons.volume_up),
-              foregroundColor: Colors.white,
-              iconColor: Colors.white,
               min: 1.0,
               max: 15.0,
               onChanged: (value) => setState(() => _value = value),
