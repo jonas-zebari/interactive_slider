@@ -1,5 +1,5 @@
 name: interactive_slider
-description: A Cupertino-themed interactive continuous slider widget.
+description: A Cupertino-themed interactive continuous slider widget that is inspired by the slider widgets used in Apple Music.
 version: 0.0.1
 repository: https://github.com/jonas-zebari/interactive_slider
 

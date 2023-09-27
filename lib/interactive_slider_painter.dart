@@ -12,11 +12,13 @@ class InteractiveSliderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final progressRect = Rect.fromLTWH(0, 0, progress.value * size.width, size.height);
+    final progressRect =
+        Rect.fromLTWH(0, 0, progress.value * size.width, size.height);
     canvas.drawRect(progressRect, _paint);
   }
 
   @override
   bool shouldRepaint(InteractiveSliderPainter oldDelegate) =>
-      progress.value != oldDelegate.progress.value || _paint.color != oldDelegate._paint.color;
+      progress.value != oldDelegate.progress.value ||
+      _paint.color != oldDelegate._paint.color;
 }

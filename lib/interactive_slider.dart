@@ -37,29 +37,82 @@ class InteractiveSlider extends StatefulWidget {
     this.brightness,
   });
 
+  /// Static outer padding for the entire widget
   final EdgeInsets padding;
+
+  /// Inset for when the user is not interacting with the slider
   final EdgeInsets unfocusedMargin;
+
+  /// Inset for when the user is interacting with the slider
   final EdgeInsets focusedMargin;
+
+  /// Icon to display under the slider bar in the start position
   final Widget? startIcon;
+
+  /// Icon to display under the slider bar in the center position
   final Widget? centerIcon;
+
+  /// Icon to display under the slider bar in the end position
   final Widget? endIcon;
+
+  /// Duration for transition animations (size, height, opacity)
   final Duration transitionDuration;
+
+  /// Curve for transition animations (size, height, opacity)
   final Curve transitionCurve;
+
+  /// Color to apply to all foreground elements (slider progress, icons,
+  /// center text)
   final Color? foregroundColor;
+
+  /// Color to apply to slider background
   final Color? backgroundColor;
+
+  /// Shape for the slider progress
   final ShapeBorder shapeBorder;
+
+  /// Slider height when the user is not interacting the slider
   final double unfocusedHeight;
+
+  /// Slider height when the user is interacting with the slider
   final double focusedHeight;
+
+  /// Slider progress and icon opacity when the user is not interacting with
+  /// the slider
   final double unfocusedOpacity;
+
+  /// The normalized value the slider should be set to when it is first built
   final double initialProgress;
+
+  /// A callback that provides the transformed slider progress (if min and max
+  /// are set)
   final ValueChanged<double>? onChanged;
+
+  /// Distance between the start, center, and end icons and the slider
   final double iconGap;
+
+  /// Start, center, and end icon row cross axis alignment
   final CrossAxisAlignment iconCrossAxisAlignment;
+
+  /// Text style to be supplied to any text widgets in the start, end, or center
+  /// icons
   final TextStyle? style;
+
+  /// A controller for external manipulation of the slider
   final InteractiveSliderController? controller;
+
+  /// Color to apply to any icons widgets in the start, end, or center icon
+  /// positions
   final Color? iconColor;
+
+  /// Transformed slider value minimum
   final double min;
+
+  /// Transformed slider value maximum
   final double max;
+
+  /// The brightness the slider and icon colors should be
+  /// (light = white, dark = black)
   final Brightness? brightness;
 
   @override
@@ -70,7 +123,8 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _margin = ValueNotifier(widget.unfocusedMargin);
-  late final _progress = widget.controller ?? ValueNotifier(widget.initialProgress);
+  late final _progress =
+      widget.controller ?? ValueNotifier(widget.initialProgress);
 
   @override
   void initState() {
@@ -89,8 +143,14 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final brightness = widget.brightness ?? (theme.brightness == Brightness.light ? Brightness.dark : Brightness.light);
-    final brightnessColor = brightness == Brightness.light ? Colors.white : Colors.black;
+    final brightness = widget.brightness ??
+        (theme.brightness == Brightness.light
+            ? Brightness.dark
+            : Brightness.light);
+    final brightnessColor =
+        brightness == Brightness.light ? Colors.white : Colors.black;
+    final textStyle =
+        widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle();
     Widget slider = ValueListenableBuilder<double>(
       valueListenable: _height,
       builder: (context, height, child) {
@@ -118,11 +178,15 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         ),
       ),
     );
-    if (widget.startIcon != null || widget.centerIcon != null || widget.endIcon != null) {
+    if (widget.startIcon != null ||
+        widget.centerIcon != null ||
+        widget.endIcon != null) {
       slider = IconTheme(
-        data: theme.iconTheme.copyWith(color: widget.iconColor ?? widget.foregroundColor ?? brightnessColor),
+        data: theme.iconTheme.copyWith(
+          color: widget.iconColor ?? widget.foregroundColor ?? brightnessColor,
+        ),
         child: DefaultTextStyle(
-          style: (widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
+          style: textStyle.copyWith(
             color: widget.foregroundColor ?? brightnessColor,
           ),
           child: Column(
@@ -180,7 +244,8 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           if (!mounted) return;
           final renderBox = context.findRenderObject() as RenderBox;
           final sliderWidth = renderBox.size.width - widget.padding.horizontal;
-          _progress.value = (_progress.value + (details.delta.dx / sliderWidth)).clamp(0.0, 1.0);
+          _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
+              .clamp(0.0, 1.0);
         },
         child: ValueListenableBuilder<EdgeInsets>(
           valueListenable: _margin,
@@ -207,5 +272,6 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     );
   }
 
-  void _onChanged() => widget.onChanged?.call(lerpDouble(widget.min, widget.max, _progress.value) ?? _progress.value);
+  void _onChanged() => widget.onChanged?.call(
+      lerpDouble(widget.min, widget.max, _progress.value) ?? _progress.value);
 }
