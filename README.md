@@ -14,7 +14,7 @@ and the Flutter guide for
 A continuous slider widget inspired by the volume slider in the Apple Music app. This widget can
 be used with little to no setup but is still fully customizable!
 
-<img height="150" align="right" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/interactive_slider.mp4?raw=true">
+<img height="250" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/interactive_slider.gif?raw=true" alt="Animated gif of slider being used">
 
 ## Features
 
@@ -28,20 +28,31 @@ Use the stock slider or customize:
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add to your dependencies:
+
+```yaml
+dependencies:
+  interactive_slider: ^0.0.1
+```
+
+Then import:
+```dart
+import 'package:interactive_slider/interactive_slider.dart';
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
 ```dart
-const like = 'sample';
+InteractiveSlider(
+  startIcon: const Icon(CupertinoIcons.volume_down),
+  centerIcon: const Text('Center'),
+  endIcon: const Icon(CupertinoIcons.volume_up),
+  min: 1.0,
+  max: 15.0,
+  onChanged: (value) => setState(() => _value = value),
+)
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Please report any bugs and open any pull requests via GitHub.
