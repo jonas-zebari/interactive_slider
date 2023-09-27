@@ -1,6 +1,7 @@
 name: interactive_slider
 description: A Cupertino-themed interactive continuous slider widget.
 version: 0.0.1
+repository: https://github.com/jonas-zebari/interactive_slider
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
