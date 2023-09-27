@@ -11,12 +11,18 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A continuous slider widget inspired by the volume slider in the Apple Music app. This widget can
+be used with little to no setup but is still fully customizable!
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+Use the stock slider or customize:
+* Built in padding for convenience
+* Adjustable size transition
+* Use any widget for a start/end icon and center label
+* Use any transition duration and curve
+* Provide any shape border for the progress bar
+* Use the normalized progress value or easily provide a min/max to be automatically transformed
 
 ## Getting started
 
