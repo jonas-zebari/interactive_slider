@@ -1,7 +1,14 @@
-## 0.0.2
+## v0.1.0
+
+* [BREAKING] Fixes issue where the slider's size transition would move other UI elements
+  * Use scale options instead of transition old transition margin
+* Adds icon position options
+* Adds icon size field
+
+## v0.0.2
 
 * Addresses pub.dev package analysis scores
 
-## 0.0.1
+## v0.0.1
 
 * Initial release of interactive_slider
