@@ -8,6 +8,11 @@ import 'package:interactive_slider/interactive_slider_painter.dart';
 
 export 'package:interactive_slider/interactive_slider_controller.dart';
 
+enum IconPosition {
+  below,
+  inline,
+}
+
 class InteractiveSlider extends StatefulWidget {
   static const defaultTransitionPeriod = 0.8;
   static const easeTransitionPeriod = 2.0;
@@ -38,6 +43,8 @@ class InteractiveSlider extends StatefulWidget {
     this.min = 0.0,
     this.max = 1.0,
     this.brightness,
+    this.iconPosition = IconPosition.inline,
+    this.iconSize = 22.0,
   })  : assert(transitionCurvePeriod > 0.0),
         assert(transitionCurvePeriod <= 2.0);
 
@@ -120,6 +127,12 @@ class InteractiveSlider extends StatefulWidget {
   /// (light = white, dark = black)
   final Brightness? brightness;
 
+  /// Determines the location of the icons if any are provided
+  final IconPosition iconPosition;
+
+  /// Icon size to apply to all icon children
+  final double iconSize;
+
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
 }
@@ -198,6 +211,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       slider = IconTheme(
         data: theme.iconTheme.copyWith(
           color: widget.iconColor ?? widget.foregroundColor ?? brightnessColor,
+          size: widget.iconSize,
         ),
         child: DefaultTextStyle(
           style: textStyle.copyWith(
@@ -205,34 +219,61 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           ),
           child: Column(
             children: [
-              Padding(
-                padding: EdgeInsets.only(bottom: widget.iconGap),
-                child: slider,
-              ),
-              Row(
-                crossAxisAlignment: widget.iconCrossAxisAlignment,
-                children: [
-                  if (widget.startIcon case var startIcon?)
-                    ValueListenableBuilder<double>(
-                      valueListenable: _opacity,
-                      builder: _opacityBuilder,
-                      child: startIcon,
-                    )
-                  else if (widget.endIcon case var endIcon?)
-                    Visibility.maintain(visible: false, child: endIcon),
-                  const Spacer(),
-                  if (widget.centerIcon case var centerIcon?) centerIcon,
-                  const Spacer(),
-                  if (widget.endIcon case var endIcon?)
-                    ValueListenableBuilder<double>(
-                      valueListenable: _opacity,
-                      builder: _opacityBuilder,
-                      child: endIcon,
-                    )
-                  else if (widget.startIcon case var startIcon?)
-                    Visibility.maintain(visible: false, child: startIcon),
-                ],
-              ),
+              switch (widget.iconPosition) {
+                IconPosition.below => Padding(
+                    padding: EdgeInsets.only(bottom: widget.iconGap),
+                    child: slider,
+                  ),
+                IconPosition.inline => Row(
+                    children: [
+                      if (widget.startIcon case var startIcon?)
+                        ValueListenableBuilder<double>(
+                          valueListenable: _opacity,
+                          builder: _opacityBuilder,
+                          child: startIcon,
+                        ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: widget.iconGap,
+                          ),
+                          child: slider,
+                        ),
+                      ),
+                      if (widget.endIcon case var endIcon?)
+                        ValueListenableBuilder<double>(
+                          valueListenable: _opacity,
+                          builder: _opacityBuilder,
+                          child: endIcon,
+                        )
+                    ],
+                  ),
+              },
+              if (widget.iconPosition == IconPosition.below)
+                Row(
+                  crossAxisAlignment: widget.iconCrossAxisAlignment,
+                  children: [
+                    if (widget.startIcon case var startIcon?)
+                      ValueListenableBuilder<double>(
+                        valueListenable: _opacity,
+                        builder: _opacityBuilder,
+                        child: startIcon,
+                      )
+                    else if (widget.endIcon case var endIcon?)
+                      Visibility.maintain(visible: false, child: endIcon),
+                    const Spacer(),
+                    if (widget.centerIcon case var centerIcon?) centerIcon,
+                    const Spacer(),
+                    if (widget.endIcon case var endIcon?)
+                      ValueListenableBuilder<double>(
+                        valueListenable: _opacity,
+                        builder: _opacityBuilder,
+                        child: endIcon,
+                      )
+                    else if (widget.startIcon case var startIcon?)
+                      Visibility.maintain(visible: false, child: startIcon),
+                  ],
+                ),
             ],
           ),
         ),
@@ -250,6 +291,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
             startIcon: widget.startIcon ?? const SizedBox.shrink(),
             centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
             endIcon: widget.endIcon ?? const SizedBox.shrink(),
+            iconPosition: widget.iconPosition,
           ),
         ),
         Padding(
@@ -322,6 +364,7 @@ class _Prototype extends StatelessWidget {
     required this.startIcon,
     required this.centerIcon,
     required this.endIcon,
+    required this.iconPosition,
   });
 
   final EdgeInsets padding;
@@ -330,21 +373,25 @@ class _Prototype extends StatelessWidget {
   final Widget startIcon;
   final Widget centerIcon;
   final Widget endIcon;
+  final IconPosition iconPosition;
 
   @override
   Widget build(BuildContext context) {
+    final sliderHeight =
+        iconPosition == IconPosition.below ? height + iconGap : height;
     return Padding(
       padding: padding,
       child: Column(
         children: [
-          SizedBox(height: height + iconGap),
-          Row(
-            children: [
-              startIcon,
-              centerIcon,
-              endIcon,
-            ],
-          ),
+          SizedBox(height: sliderHeight),
+          if (iconPosition == IconPosition.below)
+            Row(
+              children: [
+                startIcon,
+                centerIcon,
+                endIcon,
+              ],
+            ),
         ],
       ),
     );
