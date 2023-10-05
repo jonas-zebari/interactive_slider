@@ -9,6 +9,9 @@ import 'package:interactive_slider/interactive_slider_painter.dart';
 export 'package:interactive_slider/interactive_slider_controller.dart';
 
 class InteractiveSlider extends StatefulWidget {
+  static const defaultTransitionPeriod = 0.8;
+  static const easeTransitionPeriod = 2.0;
+
   const InteractiveSlider({
     super.key,
     this.padding = const EdgeInsets.all(16),
@@ -18,7 +21,7 @@ class InteractiveSlider extends StatefulWidget {
     this.centerIcon,
     this.endIcon,
     this.transitionDuration = const Duration(milliseconds: 750),
-    this.transitionCurve = const ElasticOutCurve(0.8),
+    this.transitionCurvePeriod = InteractiveSlider.defaultTransitionPeriod,
     this.backgroundColor,
     this.foregroundColor,
     this.shapeBorder = const StadiumBorder(),
@@ -35,7 +38,8 @@ class InteractiveSlider extends StatefulWidget {
     this.min = 0.0,
     this.max = 1.0,
     this.brightness,
-  });
+  })  : assert(transitionCurvePeriod > 0.0),
+        assert(transitionCurvePeriod <= 2.0);
 
   /// Static outer padding for the entire widget
   final EdgeInsets padding;
@@ -58,8 +62,9 @@ class InteractiveSlider extends StatefulWidget {
   /// Duration for transition animations (size, height, opacity)
   final Duration transitionDuration;
 
-  /// Curve for transition animations (size, height, opacity)
-  final Curve transitionCurve;
+  /// Period for elastic animation curve (size, height, opacity)
+  /// Can be any value greater than 0.0 and less than or equal to 2.0
+  final double transitionCurvePeriod;
 
   /// Color to apply to all foreground elements (slider progress, icons,
   /// center text)
@@ -120,6 +125,8 @@ class InteractiveSlider extends StatefulWidget {
 }
 
 class _InteractiveSliderState extends State<InteractiveSlider> {
+  late ElasticOutCurve _transitionCurve;
+  late double _maxSizeFactor;
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _margin = ValueNotifier(widget.unfocusedMargin);
@@ -130,6 +137,13 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   void initState() {
     super.initState();
     _progress.addListener(_onChanged);
+    _updateCurveInfo();
+  }
+
+  @override
+  void didUpdateWidget(InteractiveSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateCurveInfo();
   }
 
   @override
@@ -159,7 +173,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           width: double.infinity,
           height: _height.value,
           duration: widget.transitionDuration,
-          curve: widget.transitionCurve,
+          curve: _transitionCurve,
           decoration: ShapeDecoration(
             shape: widget.shapeBorder,
             color: widget.backgroundColor ?? brightnessColor.withOpacity(0.12),
@@ -224,42 +238,60 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         ),
       );
     }
-    return Padding(
-      padding: widget.padding,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onHorizontalDragStart: (details) {
-          if (!mounted) return;
-          _height.value = widget.focusedHeight;
-          _opacity.value = 1.0;
-          _margin.value = widget.focusedMargin;
-        },
-        onHorizontalDragEnd: (details) {
-          if (!mounted) return;
-          _height.value = widget.unfocusedHeight;
-          _opacity.value = widget.unfocusedOpacity;
-          _margin.value = widget.unfocusedMargin;
-        },
-        onHorizontalDragUpdate: (details) {
-          if (!mounted) return;
-          final renderBox = context.findRenderObject() as RenderBox;
-          final sliderWidth = renderBox.size.width - widget.padding.horizontal;
-          _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
-              .clamp(0.0, 1.0);
-        },
-        child: ValueListenableBuilder<EdgeInsets>(
-          valueListenable: _margin,
-          child: slider,
-          builder: (context, margin, child) {
-            return AnimatedPadding(
-              duration: widget.transitionDuration,
-              curve: widget.transitionCurve,
-              padding: margin,
-              child: child,
-            );
-          },
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Visibility.maintain(
+          visible: false,
+          child: _Prototype(
+            padding: widget.padding,
+            height: widget.focusedHeight * _maxSizeFactor,
+            iconGap: widget.iconGap,
+            startIcon: widget.startIcon ?? const SizedBox.shrink(),
+            centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
+            endIcon: widget.endIcon ?? const SizedBox.shrink(),
+          ),
         ),
-      ),
+        Padding(
+          padding: widget.padding,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragStart: (details) {
+              if (!mounted) return;
+              _height.value = widget.focusedHeight;
+              _opacity.value = 1.0;
+              _margin.value = widget.focusedMargin;
+            },
+            onHorizontalDragEnd: (details) {
+              if (!mounted) return;
+              _height.value = widget.unfocusedHeight;
+              _opacity.value = widget.unfocusedOpacity;
+              _margin.value = widget.unfocusedMargin;
+            },
+            onHorizontalDragUpdate: (details) {
+              if (!mounted) return;
+              final renderBox = context.findRenderObject() as RenderBox;
+              final sliderWidth =
+                  renderBox.size.width - widget.padding.horizontal;
+              _progress.value =
+                  (_progress.value + (details.delta.dx / sliderWidth))
+                      .clamp(0.0, 1.0);
+            },
+            child: ValueListenableBuilder<EdgeInsets>(
+              valueListenable: _margin,
+              child: slider,
+              builder: (context, margin, child) {
+                return AnimatedPadding(
+                  duration: widget.transitionDuration,
+                  curve: _transitionCurve,
+                  padding: margin,
+                  child: child,
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -267,11 +299,54 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     return AnimatedOpacity(
       opacity: opacity,
       duration: widget.transitionDuration,
-      curve: widget.transitionCurve,
+      curve: _transitionCurve,
       child: child,
     );
   }
 
   void _onChanged() => widget.onChanged?.call(
       lerpDouble(widget.min, widget.max, _progress.value) ?? _progress.value);
+
+  void _updateCurveInfo() {
+    _transitionCurve = ElasticOutCurve(widget.transitionCurvePeriod);
+    _maxSizeFactor =
+        _transitionCurve.transform(widget.transitionCurvePeriod / 2);
+  }
+}
+
+class _Prototype extends StatelessWidget {
+  const _Prototype({
+    required this.padding,
+    required this.height,
+    required this.iconGap,
+    required this.startIcon,
+    required this.centerIcon,
+    required this.endIcon,
+  });
+
+  final EdgeInsets padding;
+  final double height;
+  final double iconGap;
+  final Widget startIcon;
+  final Widget centerIcon;
+  final Widget endIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Column(
+        children: [
+          SizedBox(height: height + iconGap),
+          Row(
+            children: [
+              startIcon,
+              centerIcon,
+              endIcon,
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
