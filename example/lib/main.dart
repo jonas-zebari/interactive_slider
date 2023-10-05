@@ -75,6 +75,12 @@ class _MyHomePageState extends State<MyHomePage> {
               max: 15.0,
               onChanged: (value) => setState(() => _value = value),
             ),
+            const InteractiveSlider(
+              startIcon: Icon(CupertinoIcons.minus),
+              centerIcon: Text('Center'),
+              endIcon: Icon(CupertinoIcons.plus),
+              iconPosition: IconPosition.below,
+            ),
           ],
         ),
       ),
