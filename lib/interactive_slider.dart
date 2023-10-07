@@ -11,6 +11,7 @@ export 'package:interactive_slider/interactive_slider_controller.dart';
 enum IconPosition {
   below,
   inline,
+  inside,
 }
 
 class InteractiveSlider extends StatefulWidget {
@@ -32,7 +33,7 @@ class InteractiveSlider extends StatefulWidget {
     this.shapeBorder = const StadiumBorder(),
     this.unfocusedHeight = 10.0,
     this.focusedHeight = 20.0,
-    this.unfocusedOpacity = 0.4,
+    double? unfocusedOpacity,
     this.initialProgress = 0.0,
     this.onChanged,
     this.iconGap = 8.0,
@@ -45,7 +46,9 @@ class InteractiveSlider extends StatefulWidget {
     this.brightness,
     this.iconPosition = IconPosition.inline,
     this.iconSize = 22.0,
-  })  : assert(transitionCurvePeriod > 0.0),
+  })  : unfocusedOpacity = unfocusedOpacity ??
+            (iconPosition == IconPosition.inside ? 1.0 : 0.4),
+        assert(transitionCurvePeriod > 0.0),
         assert(transitionCurvePeriod <= 2.0);
 
   /// Static outer padding for the entire widget
@@ -146,6 +149,30 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _progress =
       widget.controller ?? ValueNotifier(widget.initialProgress);
 
+  List<Widget> get _iconChildren {
+    return [
+      if (widget.startIcon case var startIcon?)
+        ValueListenableBuilder<double>(
+          valueListenable: _opacity,
+          builder: _opacityBuilder,
+          child: startIcon,
+        )
+      else if (widget.endIcon case var endIcon?)
+        Visibility.maintain(visible: false, child: endIcon),
+      const Spacer(),
+      if (widget.centerIcon case var centerIcon?) centerIcon,
+      const Spacer(),
+      if (widget.endIcon case var endIcon?)
+        ValueListenableBuilder<double>(
+          valueListenable: _opacity,
+          builder: _opacityBuilder,
+          child: endIcon,
+        )
+      else if (widget.startIcon case var startIcon?)
+        Visibility.maintain(visible: false, child: startIcon),
+    ];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -157,6 +184,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   void didUpdateWidget(InteractiveSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateCurveInfo();
+    _height.value = widget.unfocusedHeight;
+    _opacity.value = widget.unfocusedOpacity;
+    _margin.value = widget.unfocusedMargin;
   }
 
   @override
@@ -176,8 +206,15 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
             : Brightness.light);
     final brightnessColor =
         brightness == Brightness.light ? Colors.white : Colors.black;
+    final innerChildColor = widget.iconPosition == IconPosition.inside
+        ? Colors.grey.shade500
+        : brightnessColor;
     final textStyle =
         widget.style ?? theme.textTheme.bodyMedium ?? const TextStyle();
+    final horizontalPadding = EdgeInsets.only(
+      left: widget.startIcon != null ? widget.iconGap : 0,
+      right: widget.endIcon != null ? widget.iconGap : 0,
+    );
     Widget slider = ValueListenableBuilder<double>(
       valueListenable: _height,
       builder: (context, height, child) {
@@ -202,138 +239,124 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
             progress: _progress,
             color: widget.foregroundColor ?? brightnessColor,
           ),
+          child: switch (widget.iconPosition) {
+            IconPosition.inside => Padding(
+                padding: horizontalPadding,
+                child: Row(children: _iconChildren),
+              ),
+            IconPosition.inline when widget.centerIcon != null =>
+              Center(child: widget.centerIcon),
+            _ => const SizedBox.shrink(),
+          },
         ),
       ),
     );
     if (widget.startIcon != null ||
         widget.centerIcon != null ||
         widget.endIcon != null) {
-      slider = IconTheme(
+      slider = Column(
+        children: [
+          switch (widget.iconPosition) {
+            IconPosition.below => Padding(
+                padding: EdgeInsets.only(bottom: widget.iconGap),
+                child: slider,
+              ),
+            IconPosition.inside => slider,
+            IconPosition.inline => Row(
+                children: [
+                  if (widget.startIcon case var startIcon?)
+                    ValueListenableBuilder<double>(
+                      valueListenable: _opacity,
+                      builder: _opacityBuilder,
+                      child: startIcon,
+                    ),
+                  Expanded(
+                    child: Padding(
+                      padding: horizontalPadding,
+                      child: slider,
+                    ),
+                  ),
+                  if (widget.endIcon case var endIcon?)
+                    ValueListenableBuilder<double>(
+                      valueListenable: _opacity,
+                      builder: _opacityBuilder,
+                      child: endIcon,
+                    )
+                ],
+              ),
+          },
+          if (widget.iconPosition == IconPosition.below)
+            Row(
+              crossAxisAlignment: widget.iconCrossAxisAlignment,
+              children: _iconChildren,
+            ),
+        ],
+      );
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragStart: (details) {
+        if (!mounted) return;
+        _height.value = widget.focusedHeight;
+        _opacity.value = 1.0;
+        _margin.value = widget.focusedMargin;
+      },
+      onHorizontalDragEnd: (details) {
+        if (!mounted) return;
+        _height.value = widget.unfocusedHeight;
+        _opacity.value = widget.unfocusedOpacity;
+        _margin.value = widget.unfocusedMargin;
+      },
+      onHorizontalDragUpdate: (details) {
+        if (!mounted) return;
+        final renderBox = context.findRenderObject() as RenderBox;
+        final sliderWidth = renderBox.size.width - widget.padding.horizontal;
+        _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
+            .clamp(0.0, 1.0);
+      },
+      child: IconTheme(
         data: theme.iconTheme.copyWith(
-          color: widget.iconColor ?? widget.foregroundColor ?? brightnessColor,
+          color: widget.iconColor ?? widget.foregroundColor ?? innerChildColor,
           size: widget.iconSize,
         ),
         child: DefaultTextStyle(
           style: textStyle.copyWith(
-            color: widget.foregroundColor ?? brightnessColor,
+            color: widget.foregroundColor ?? innerChildColor,
           ),
-          child: Column(
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              switch (widget.iconPosition) {
-                IconPosition.below => Padding(
-                    padding: EdgeInsets.only(bottom: widget.iconGap),
-                    child: slider,
-                  ),
-                IconPosition.inline => Row(
-                    children: [
-                      if (widget.startIcon case var startIcon?)
-                        ValueListenableBuilder<double>(
-                          valueListenable: _opacity,
-                          builder: _opacityBuilder,
-                          child: startIcon,
-                        ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: widget.iconGap,
-                          ),
-                          child: slider,
-                        ),
-                      ),
-                      if (widget.endIcon case var endIcon?)
-                        ValueListenableBuilder<double>(
-                          valueListenable: _opacity,
-                          builder: _opacityBuilder,
-                          child: endIcon,
-                        )
-                    ],
-                  ),
-              },
-              if (widget.iconPosition == IconPosition.below)
-                Row(
-                  crossAxisAlignment: widget.iconCrossAxisAlignment,
-                  children: [
-                    if (widget.startIcon case var startIcon?)
-                      ValueListenableBuilder<double>(
-                        valueListenable: _opacity,
-                        builder: _opacityBuilder,
-                        child: startIcon,
-                      )
-                    else if (widget.endIcon case var endIcon?)
-                      Visibility.maintain(visible: false, child: endIcon),
-                    const Spacer(),
-                    if (widget.centerIcon case var centerIcon?) centerIcon,
-                    const Spacer(),
-                    if (widget.endIcon case var endIcon?)
-                      ValueListenableBuilder<double>(
-                        valueListenable: _opacity,
-                        builder: _opacityBuilder,
-                        child: endIcon,
-                      )
-                    else if (widget.startIcon case var startIcon?)
-                      Visibility.maintain(visible: false, child: startIcon),
-                  ],
+              Visibility.maintain(
+                visible: false,
+                child: _Prototype(
+                  padding: widget.padding,
+                  height: widget.focusedHeight * _maxSizeFactor,
+                  iconGap: widget.iconGap,
+                  startIcon: widget.startIcon ?? const SizedBox.shrink(),
+                  centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
+                  endIcon: widget.endIcon ?? const SizedBox.shrink(),
+                  iconPosition: widget.iconPosition,
                 ),
+              ),
+              Padding(
+                padding: widget.padding,
+                child: ValueListenableBuilder<EdgeInsets>(
+                  valueListenable: _margin,
+                  child: slider,
+                  builder: (context, margin, child) {
+                    return AnimatedPadding(
+                      duration: widget.transitionDuration,
+                      curve: _transitionCurve,
+                      padding: margin,
+                      child: child,
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),
-      );
-    }
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Visibility.maintain(
-          visible: false,
-          child: _Prototype(
-            padding: widget.padding,
-            height: widget.focusedHeight * _maxSizeFactor,
-            iconGap: widget.iconGap,
-            startIcon: widget.startIcon ?? const SizedBox.shrink(),
-            centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
-            endIcon: widget.endIcon ?? const SizedBox.shrink(),
-            iconPosition: widget.iconPosition,
-          ),
-        ),
-        Padding(
-          padding: widget.padding,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onHorizontalDragStart: (details) {
-              if (!mounted) return;
-              _height.value = widget.focusedHeight;
-              _opacity.value = 1.0;
-              _margin.value = widget.focusedMargin;
-            },
-            onHorizontalDragEnd: (details) {
-              if (!mounted) return;
-              _height.value = widget.unfocusedHeight;
-              _opacity.value = widget.unfocusedOpacity;
-              _margin.value = widget.unfocusedMargin;
-            },
-            onHorizontalDragUpdate: (details) {
-              if (!mounted) return;
-              final renderBox = context.findRenderObject() as RenderBox;
-              final sliderWidth =
-                  renderBox.size.width - widget.padding.horizontal;
-              _progress.value =
-                  (_progress.value + (details.delta.dx / sliderWidth))
-                      .clamp(0.0, 1.0);
-            },
-            child: ValueListenableBuilder<EdgeInsets>(
-              valueListenable: _margin,
-              child: slider,
-              builder: (context, margin, child) {
-                return AnimatedPadding(
-                  duration: widget.transitionDuration,
-                  curve: _transitionCurve,
-                  padding: margin,
-                  child: child,
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

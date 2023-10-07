@@ -73,6 +73,8 @@ class _MyHomePageState extends State<MyHomePage> {
               endIcon: const Icon(CupertinoIcons.volume_up),
               min: 1.0,
               max: 15.0,
+              focusedHeight: 40,
+              unfocusedHeight: 30,
               onChanged: (value) => setState(() => _value = value),
             ),
             const InteractiveSlider(
@@ -80,6 +82,18 @@ class _MyHomePageState extends State<MyHomePage> {
               centerIcon: Text('Center'),
               endIcon: Icon(CupertinoIcons.plus),
               iconPosition: IconPosition.below,
+            ),
+            const InteractiveSlider(
+              padding: EdgeInsets.symmetric(horizontal: 48),
+              startIcon: Icon(CupertinoIcons.minus),
+              centerIcon: Text('Center'),
+              endIcon: Icon(CupertinoIcons.plus),
+              shapeBorder: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
+              iconPosition: IconPosition.inside,
+              focusedHeight: 45,
+              unfocusedHeight: 35,
             ),
           ],
         ),
