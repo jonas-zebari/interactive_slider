@@ -1,3 +1,8 @@
+## v0.1.1
+
+* Adds the option to place icons inside the slider bar
+* Fixes the inline icon position slider update calculation
+
 ## v0.1.0
 
 * [BREAKING] Fixes issue where the slider's size transition would move other UI elements
