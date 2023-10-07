@@ -36,7 +36,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _controller = InteractiveSliderController(0.0);
-  var _value = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
-            Text(
-              'Transformed: ${_value.toStringAsFixed(2)}',
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
             ElevatedButton(
               onPressed: () => _controller.value = 0.0,
               child: const Text('Reset'),
@@ -69,13 +64,14 @@ class _MyHomePageState extends State<MyHomePage> {
             InteractiveSlider(
               controller: _controller,
               startIcon: const Icon(CupertinoIcons.volume_down),
-              centerIcon: const Text('Center'),
               endIcon: const Icon(CupertinoIcons.volume_up),
               min: 1.0,
               max: 15.0,
-              focusedHeight: 40,
-              unfocusedHeight: 30,
-              onChanged: (value) => setState(() => _value = value),
+              focusedHeight: 35,
+              unfocusedHeight: 25,
+              shapeBorder: const BeveledRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
             ),
             const InteractiveSlider(
               startIcon: Icon(CupertinoIcons.minus),
@@ -84,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
               iconPosition: IconPosition.below,
             ),
             const InteractiveSlider(
-              padding: EdgeInsets.symmetric(horizontal: 48),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               startIcon: Icon(CupertinoIcons.minus),
               centerIcon: Text('Center'),
               endIcon: Icon(CupertinoIcons.plus),

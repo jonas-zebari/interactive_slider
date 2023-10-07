@@ -141,13 +141,15 @@ class InteractiveSlider extends StatefulWidget {
 }
 
 class _InteractiveSliderState extends State<InteractiveSlider> {
-  late ElasticOutCurve _transitionCurve;
-  late double _maxSizeFactor;
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _margin = ValueNotifier(widget.unfocusedMargin);
   late final _progress =
       widget.controller ?? ValueNotifier(widget.initialProgress);
+  final _startIconKey = GlobalKey();
+  final _endIconKey = GlobalKey();
+  late ElasticOutCurve _transitionCurve;
+  late double _maxSizeFactor;
 
   List<Widget> get _iconChildren {
     return [
@@ -184,9 +186,6 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   void didUpdateWidget(InteractiveSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateCurveInfo();
-    _height.value = widget.unfocusedHeight;
-    _opacity.value = widget.unfocusedOpacity;
-    _margin.value = widget.unfocusedMargin;
   }
 
   @override
@@ -266,6 +265,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                 children: [
                   if (widget.startIcon case var startIcon?)
                     ValueListenableBuilder<double>(
+                      key: _startIconKey,
                       valueListenable: _opacity,
                       builder: _opacityBuilder,
                       child: startIcon,
@@ -278,6 +278,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                   ),
                   if (widget.endIcon case var endIcon?)
                     ValueListenableBuilder<double>(
+                      key: _endIconKey,
                       valueListenable: _opacity,
                       builder: _opacityBuilder,
                       child: endIcon,
@@ -310,7 +311,22 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       onHorizontalDragUpdate: (details) {
         if (!mounted) return;
         final renderBox = context.findRenderObject() as RenderBox;
-        final sliderWidth = renderBox.size.width - widget.padding.horizontal;
+        var sliderWidth = renderBox.size.width - widget.padding.horizontal;
+        if (widget.iconPosition == IconPosition.inline) {
+          final startIconRenderBox =
+              _startIconKey.currentContext?.findRenderObject() as RenderBox?;
+          final endIconRenderBox =
+              _endIconKey.currentContext?.findRenderObject() as RenderBox?;
+          final startIconWidth = startIconRenderBox?.size.width;
+          final endIconWidth = endIconRenderBox?.size.width;
+          if (startIconWidth != null) {
+            sliderWidth -= startIconWidth;
+          }
+          if (endIconWidth != null) {
+            sliderWidth -= endIconWidth;
+          }
+          sliderWidth -= widget.iconGap * 2;
+        }
         _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
             .clamp(0.0, 1.0);
       },
