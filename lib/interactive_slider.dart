@@ -21,7 +21,7 @@ class InteractiveSlider extends StatefulWidget {
   const InteractiveSlider({
     super.key,
     this.padding = const EdgeInsets.all(16),
-    this.unfocusedMargin = const EdgeInsets.symmetric(horizontal: 16),
+    EdgeInsets? unfocusedMargin,
     this.focusedMargin = EdgeInsets.zero,
     this.startIcon,
     this.centerIcon,
@@ -31,8 +31,8 @@ class InteractiveSlider extends StatefulWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.shapeBorder = const StadiumBorder(),
-    this.unfocusedHeight = 10.0,
-    this.focusedHeight = 20.0,
+    this.unfocusedSize = 10.0,
+    this.focusedSize = 20.0,
     double? unfocusedOpacity,
     this.initialProgress = 0.0,
     this.onChanged,
@@ -46,8 +46,13 @@ class InteractiveSlider extends StatefulWidget {
     this.brightness,
     this.iconPosition = IconPosition.inline,
     this.iconSize = 22.0,
+    this.direction = Axis.horizontal,
+    this.mainAxisSize,
   })  : unfocusedOpacity = unfocusedOpacity ??
             (iconPosition == IconPosition.inside ? 1.0 : 0.4),
+        unfocusedMargin = direction == Axis.horizontal
+            ? const EdgeInsets.symmetric(horizontal: 16)
+            : const EdgeInsets.symmetric(vertical: 16),
         assert(transitionCurvePeriod > 0.0),
         assert(transitionCurvePeriod <= 2.0);
 
@@ -87,10 +92,10 @@ class InteractiveSlider extends StatefulWidget {
   final ShapeBorder shapeBorder;
 
   /// Slider height when the user is not interacting the slider
-  final double unfocusedHeight;
+  final double unfocusedSize;
 
   /// Slider height when the user is interacting with the slider
-  final double focusedHeight;
+  final double focusedSize;
 
   /// Slider progress and icon opacity when the user is not interacting with
   /// the slider
@@ -136,20 +141,27 @@ class InteractiveSlider extends StatefulWidget {
   /// Icon size to apply to all icon children
   final double iconSize;
 
+  /// The main axis of the slider
+  final Axis direction;
+
+  /// The maximum cross axis size to enforce
+  final double? mainAxisSize;
+
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
 }
 
 class _InteractiveSliderState extends State<InteractiveSlider> {
-  late final _height = ValueNotifier(widget.unfocusedHeight);
-  late final _opacity = ValueNotifier(widget.unfocusedOpacity);
+  late final _size = ValueNotifier(widget.unfocusedSize);
   late final _margin = ValueNotifier(widget.unfocusedMargin);
+  late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _progress =
       widget.controller ?? ValueNotifier(widget.initialProgress);
   final _startIconKey = GlobalKey();
   final _endIconKey = GlobalKey();
   late ElasticOutCurve _transitionCurve;
   late double _maxSizeFactor;
+  var _isFocused = false;
 
   List<Widget> get _iconChildren {
     return [
@@ -186,11 +198,20 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   void didUpdateWidget(InteractiveSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateCurveInfo();
+    if (_isFocused) {
+      _size.value = widget.focusedSize;
+      _margin.value = widget.focusedMargin;
+      _opacity.value = 1.0;
+    } else {
+      _size.value = widget.unfocusedSize;
+      _margin.value = widget.unfocusedMargin;
+      _opacity.value = widget.unfocusedOpacity;
+    }
   }
 
   @override
   void dispose() {
-    _height.dispose();
+    _size.dispose();
     _opacity.dispose();
     _progress.dispose();
     super.dispose();
@@ -214,13 +235,23 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       left: widget.startIcon != null ? widget.iconGap : 0,
       right: widget.endIcon != null ? widget.iconGap : 0,
     );
+    final verticalPadding = EdgeInsets.only(
+      bottom: widget.startIcon != null ? widget.iconGap : 0,
+      top: widget.endIcon != null ? widget.iconGap : 0,
+    );
     Widget slider = ValueListenableBuilder<double>(
-      valueListenable: _height,
+      valueListenable: _size,
       builder: (context, height, child) {
         return AnimatedContainer(
           clipBehavior: Clip.antiAlias,
-          width: double.infinity,
-          height: _height.value,
+          width: switch (widget.direction) {
+            Axis.horizontal => widget.mainAxisSize ?? double.infinity,
+            Axis.vertical => _size.value,
+          },
+          height: switch (widget.direction) {
+            Axis.horizontal => _size.value,
+            Axis.vertical => widget.mainAxisSize ?? double.infinity,
+          },
           duration: widget.transitionDuration,
           curve: _transitionCurve,
           decoration: ShapeDecoration(
@@ -235,13 +266,19 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         builder: _opacityBuilder,
         child: CustomPaint(
           painter: InteractiveSliderPainter(
+            direction: widget.direction,
             progress: _progress,
             color: widget.foregroundColor ?? brightnessColor,
           ),
           child: switch (widget.iconPosition) {
             IconPosition.inside => Padding(
-                padding: horizontalPadding,
-                child: Row(children: _iconChildren),
+                padding: widget.direction == Axis.horizontal
+                    ? horizontalPadding
+                    : verticalPadding,
+                child: Flex(
+                  direction: widget.direction,
+                  children: _iconChildren,
+                ),
               ),
             IconPosition.inline when widget.centerIcon != null =>
               Center(child: widget.centerIcon),
@@ -272,7 +309,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                     ),
                   Expanded(
                     child: Padding(
-                      padding: horizontalPadding,
+                      padding: widget.direction == Axis.horizontal
+                          ? horizontalPadding
+                          : verticalPadding,
                       child: slider,
                     ),
                   ),
@@ -296,40 +335,17 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     }
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onHorizontalDragStart: (details) {
-        if (!mounted) return;
-        _height.value = widget.focusedHeight;
-        _opacity.value = 1.0;
-        _margin.value = widget.focusedMargin;
-      },
-      onHorizontalDragEnd: (details) {
-        if (!mounted) return;
-        _height.value = widget.unfocusedHeight;
-        _opacity.value = widget.unfocusedOpacity;
-        _margin.value = widget.unfocusedMargin;
-      },
-      onHorizontalDragUpdate: (details) {
-        if (!mounted) return;
-        final renderBox = context.findRenderObject() as RenderBox;
-        var sliderWidth = renderBox.size.width - widget.padding.horizontal;
-        if (widget.iconPosition == IconPosition.inline) {
-          final startIconRenderBox =
-              _startIconKey.currentContext?.findRenderObject() as RenderBox?;
-          final endIconRenderBox =
-              _endIconKey.currentContext?.findRenderObject() as RenderBox?;
-          final startIconWidth = startIconRenderBox?.size.width;
-          final endIconWidth = endIconRenderBox?.size.width;
-          if (startIconWidth != null) {
-            sliderWidth -= startIconWidth;
-          }
-          if (endIconWidth != null) {
-            sliderWidth -= endIconWidth;
-          }
-          sliderWidth -= widget.iconGap * 2;
-        }
-        _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
-            .clamp(0.0, 1.0);
-      },
+      onHorizontalDragStart:
+          widget.direction == Axis.horizontal ? _onDragStart : null,
+      onHorizontalDragEnd:
+          widget.direction == Axis.horizontal ? _onDragEnd : null,
+      onHorizontalDragUpdate:
+          widget.direction == Axis.horizontal ? _onDragUpdate : null,
+      onVerticalDragStart:
+          widget.direction == Axis.vertical ? _onDragStart : null,
+      onVerticalDragEnd: widget.direction == Axis.vertical ? _onDragEnd : null,
+      onVerticalDragUpdate:
+          widget.direction == Axis.vertical ? _onDragUpdate : null,
       child: IconTheme(
         data: theme.iconTheme.copyWith(
           color: widget.iconColor ?? widget.foregroundColor ?? innerChildColor,
@@ -346,7 +362,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                 visible: false,
                 child: _Prototype(
                   padding: widget.padding,
-                  height: widget.focusedHeight * _maxSizeFactor,
+                  height: widget.focusedSize * _maxSizeFactor,
                   iconGap: widget.iconGap,
                   startIcon: widget.startIcon ?? const SizedBox.shrink(),
                   centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
@@ -383,6 +399,54 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       curve: _transitionCurve,
       child: child,
     );
+  }
+
+  void _onDragStart(DragStartDetails details) {
+    if (!mounted) return;
+    _isFocused = true;
+    _size.value = widget.focusedSize;
+    _opacity.value = 1.0;
+    _margin.value = widget.focusedMargin;
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    if (!mounted) return;
+    _isFocused = false;
+    _size.value = widget.unfocusedSize;
+    _opacity.value = widget.unfocusedOpacity;
+    _margin.value = widget.unfocusedMargin;
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    if (!mounted) return;
+    final isHorizontal = widget.direction == Axis.horizontal;
+    final renderBox = context.findRenderObject() as RenderBox;
+    var sliderSize = isHorizontal
+        ? renderBox.size.width - widget.padding.horizontal
+        : renderBox.size.height - widget.padding.vertical;
+    if (widget.iconPosition == IconPosition.inline) {
+      final startIconRenderBox =
+          _startIconKey.currentContext?.findRenderObject() as RenderBox?;
+      final endIconRenderBox =
+          _endIconKey.currentContext?.findRenderObject() as RenderBox?;
+      final startIconSize = isHorizontal
+          ? startIconRenderBox?.size.width
+          : startIconRenderBox?.size.height;
+      final endIconSize = isHorizontal
+          ? endIconRenderBox?.size.width
+          : endIconRenderBox?.size.height;
+      if (startIconSize != null) {
+        sliderSize -= startIconSize;
+      }
+      if (endIconSize != null) {
+        sliderSize -= endIconSize;
+      }
+      sliderSize -= widget.iconGap *
+          (widget.startIcon != null && widget.endIcon != null ? 2 : 1);
+    }
+    final primaryDelta = isHorizontal ? details.delta.dx : -details.delta.dy;
+    _progress.value =
+        (_progress.value + (primaryDelta / sliderSize)).clamp(0.0, 1.0);
   }
 
   void _onChanged() => widget.onChanged?.call(
