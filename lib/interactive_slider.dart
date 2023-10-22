@@ -14,6 +14,11 @@ enum IconPosition {
   inside,
 }
 
+enum GradientSize {
+  progressWidth,
+  totalWidth,
+}
+
 class InteractiveSlider extends StatefulWidget {
   static const defaultTransitionPeriod = 0.8;
   static const easeTransitionPeriod = 2.0;
@@ -46,6 +51,8 @@ class InteractiveSlider extends StatefulWidget {
     this.brightness,
     this.iconPosition = IconPosition.inline,
     this.iconSize = 22.0,
+    this.gradient,
+    this.gradientSize = GradientSize.totalWidth,
   })  : unfocusedOpacity = unfocusedOpacity ??
             (iconPosition == IconPosition.inside ? 1.0 : 0.4),
         assert(transitionCurvePeriod > 0.0),
@@ -135,6 +142,13 @@ class InteractiveSlider extends StatefulWidget {
 
   /// Icon size to apply to all icon children
   final double iconSize;
+
+  /// Gradient to paint the progress bar with
+  final Gradient? gradient;
+
+  /// The width the gradient should be painted with - the size of the progress
+  /// portion or the total length of the slider
+  final GradientSize gradientSize;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -237,6 +251,8 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           painter: InteractiveSliderPainter(
             progress: _progress,
             color: widget.foregroundColor ?? brightnessColor,
+            gradient: widget.gradient,
+            gradientSize: widget.gradientSize,
           ),
           child: switch (widget.iconPosition) {
             IconPosition.inside => Padding(
