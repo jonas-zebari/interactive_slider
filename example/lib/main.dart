@@ -91,6 +91,18 @@ class _MyHomePageState extends State<MyHomePage> {
               focusedHeight: 45,
               unfocusedHeight: 35,
             ),
+            const InteractiveSlider(
+              startIcon: Icon(CupertinoIcons.minus),
+              endIcon: Icon(CupertinoIcons.plus),
+              iconPosition: IconPosition.inside,
+              unfocusedOpacity: 1.0,
+              unfocusedHeight: 30,
+              focusedHeight: 40,
+              foregroundColor: Colors.white,
+              gradient: LinearGradient(
+                colors: [Colors.blue, Colors.purple],
+              ),
+            ),
           ],
         ),
       ),
