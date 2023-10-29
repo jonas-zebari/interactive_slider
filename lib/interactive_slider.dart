@@ -153,8 +153,13 @@ class InteractiveSlider extends StatefulWidget {
   /// portion or the total length of the slider
   final GradientSize gradientSize;
 
+  /// Widget builder to run when slider progress is updated
   final ValueWidgetBuilder<double>? startIconBuilder;
+
+  /// Widget builder to run when slider progress is updated
   final ValueWidgetBuilder<double>? centerIconBuilder;
+
+  /// Widget builder to run when slider progress is updated
   final ValueWidgetBuilder<double>? endIconBuilder;
 
   @override
