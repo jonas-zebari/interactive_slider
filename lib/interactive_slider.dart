@@ -41,6 +41,7 @@ class InteractiveSlider extends StatefulWidget {
     double? unfocusedOpacity,
     this.initialProgress = 0.0,
     this.onChanged,
+    this.onProgressUpdated,
     this.iconGap = 8.0,
     this.iconCrossAxisAlignment = CrossAxisAlignment.center,
     this.style,
@@ -112,6 +113,9 @@ class InteractiveSlider extends StatefulWidget {
   /// A callback that provides the transformed slider progress (if min and max
   /// are set)
   final ValueChanged<double>? onChanged;
+
+  /// A callback that runs when the user finishes updating the slider's progress
+  final ValueChanged<double>? onProgressUpdated;
 
   /// Distance between the start, center, and end icons and the slider
   final double iconGap;
@@ -348,6 +352,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         _height.value = widget.unfocusedHeight;
         _opacity.value = widget.unfocusedOpacity;
         _margin.value = widget.unfocusedMargin;
+        widget.onProgressUpdated?.call(_progress.value);
       },
       onHorizontalDragUpdate: (details) {
         if (!mounted) return;
