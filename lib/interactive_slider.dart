@@ -185,7 +185,10 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       else if (widget.endIcon case var endIcon?)
         Visibility.maintain(visible: false, child: endIcon),
       const Spacer(),
-      if (widget.centerIcon case var centerIcon?) centerIcon,
+      if (widget.centerIconBuilder case var centerBuilder?)
+        _iconBuilder(centerBuilder, widget.centerIcon)
+      else if (widget.centerIcon case var centerIcon?)
+        centerIcon,
       const Spacer(),
       if (widget.endIconBuilder case var endBuilder?)
         _iconBuilder(endBuilder, widget.endIcon)
@@ -270,6 +273,8 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                 padding: horizontalPadding,
                 child: Row(children: _iconChildren),
               ),
+            IconPosition.inline when widget.centerIconBuilder != null =>
+              _iconBuilder(widget.centerIconBuilder!, widget.centerIcon),
             IconPosition.inline when widget.centerIcon != null =>
               Center(child: widget.centerIcon),
             _ => const SizedBox.shrink(),
