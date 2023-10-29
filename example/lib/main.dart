@@ -96,8 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
               endIcon: Icon(CupertinoIcons.plus),
               iconPosition: IconPosition.inside,
               unfocusedOpacity: 1.0,
-              unfocusedHeight: 30,
-              focusedHeight: 40,
+              unfocusedHeight: 50,
+              focusedHeight: 60,
               foregroundColor: Colors.white,
               gradient: LinearGradient(
                 colors: [Colors.blue, Colors.purple],

@@ -53,6 +53,9 @@ class InteractiveSlider extends StatefulWidget {
     this.iconSize = 22.0,
     this.gradient,
     this.gradientSize = GradientSize.totalWidth,
+    this.startIconBuilder,
+    this.centerIconBuilder,
+    this.endIconBuilder,
   })  : unfocusedOpacity = unfocusedOpacity ??
             (iconPosition == IconPosition.inside ? 1.0 : 0.4),
         assert(transitionCurvePeriod > 0.0),
@@ -150,6 +153,10 @@ class InteractiveSlider extends StatefulWidget {
   /// portion or the total length of the slider
   final GradientSize gradientSize;
 
+  final ValueWidgetBuilder<double>? startIconBuilder;
+  final ValueWidgetBuilder<double>? centerIconBuilder;
+  final ValueWidgetBuilder<double>? endIconBuilder;
+
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
 }
@@ -167,7 +174,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
 
   List<Widget> get _iconChildren {
     return [
-      if (widget.startIcon case var startIcon?)
+      if (widget.startIconBuilder case var startBuilder?)
+        _iconBuilder(startBuilder, widget.startIcon)
+      else if (widget.startIcon case var startIcon?)
         ValueListenableBuilder<double>(
           valueListenable: _opacity,
           builder: _opacityBuilder,
@@ -178,7 +187,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       const Spacer(),
       if (widget.centerIcon case var centerIcon?) centerIcon,
       const Spacer(),
-      if (widget.endIcon case var endIcon?)
+      if (widget.endIconBuilder case var endBuilder?)
+        _iconBuilder(endBuilder, widget.endIcon)
+      else if (widget.endIcon case var endIcon?)
         ValueListenableBuilder<double>(
           valueListenable: _opacity,
           builder: _opacityBuilder,
@@ -279,7 +290,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
             IconPosition.inside => slider,
             IconPosition.inline => Row(
                 children: [
-                  if (widget.startIcon case var startIcon?)
+                  if (widget.startIconBuilder case var startBuilder?)
+                    _iconBuilder(startBuilder, widget.startIcon)
+                  else if (widget.startIcon case var startIcon?)
                     ValueListenableBuilder<double>(
                       key: _startIconKey,
                       valueListenable: _opacity,
@@ -292,7 +305,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
                       child: slider,
                     ),
                   ),
-                  if (widget.endIcon case var endIcon?)
+                  if (widget.endIconBuilder case var endBuilder?)
+                    _iconBuilder(endBuilder, widget.endIcon)
+                  else if (widget.endIcon case var endIcon?)
                     ValueListenableBuilder<double>(
                       key: _endIconKey,
                       valueListenable: _opacity,
@@ -398,6 +413,14 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
       duration: widget.transitionDuration,
       curve: _transitionCurve,
       child: child,
+    );
+  }
+
+  Widget _iconBuilder(ValueWidgetBuilder<double> builder, Widget? icon) {
+    return ValueListenableBuilder<double>(
+      valueListenable: _progress,
+      builder: builder,
+      child: icon,
     );
   }
 
