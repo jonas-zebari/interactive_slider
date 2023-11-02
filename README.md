@@ -27,6 +27,8 @@ Use the stock slider or customize:
 * Use any transition duration and curve
 * Provide any shape border for the progress bar
 * Use the normalized progress value or easily provide a min/max to be automatically transformed
+* Animate start and end icons using slider progress
+* Color the slider's porgress with a gradient
 
 ## Getting started
 
@@ -34,7 +36,7 @@ Add to your dependencies:
 
 ```yaml
 dependencies:
-  interactive_slider: ^0.1.1
+  interactive_slider: ^0.2.0
 ```
 
 Then import:
