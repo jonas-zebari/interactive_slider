@@ -14,7 +14,9 @@ and the Flutter guide for
 A continuous slider widget inspired by the volume slider in the Apple Music app. This widget can
 be used with little to no setup but is still fully customizable!
 
-<img height="250" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/interactive_slider.gif?raw=true" alt="Animated gif of slider being used">
+<img height="250" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/icons.gif?raw=true" alt="Animated gif of slider being used">
+<img height="250" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/shapes.gif?raw=true" alt="Animated gif of slider being used">
+<img height="250" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/colors.gif?raw=true" alt="Animated gif of slider being used">
 
 ## Features
 
