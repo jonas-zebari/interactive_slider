@@ -36,7 +36,7 @@ Add to your dependencies:
 
 ```yaml
 dependencies:
-  interactive_slider: ^0.2.0
+  interactive_slider: ^0.2.1
 ```
 
 Then import:
