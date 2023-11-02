@@ -20,88 +20,84 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Interactive Slider'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final _controller = InteractiveSliderController(0.0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title),
       ),
-      body: Center(
+      body: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ValueListenableBuilder<double>(
-              valueListenable: _controller,
-              builder: (context, progress, _) {
-                return Text(
-                  'Normal: ${progress.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.headlineLarge,
-                );
-              },
-            ),
-            ElevatedButton(
-              onPressed: () => _controller.value = 0.0,
-              child: const Text('Reset'),
+            InteractiveSlider(
+              startIcon: Icon(CupertinoIcons.volume_down),
+              endIcon: Icon(CupertinoIcons.volume_up),
             ),
             InteractiveSlider(
-              controller: _controller,
-              startIcon: const Icon(CupertinoIcons.volume_down),
-              endIcon: const Icon(CupertinoIcons.volume_up),
-              min: 1.0,
-              max: 15.0,
-              focusedHeight: 35,
-              unfocusedHeight: 25,
-              shapeBorder: const BeveledRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-              ),
-            ),
-            const InteractiveSlider(
-              startIcon: Icon(CupertinoIcons.minus),
-              centerIcon: Text('Center'),
-              endIcon: Icon(CupertinoIcons.plus),
               iconPosition: IconPosition.below,
-            ),
-            const InteractiveSlider(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              startIcon: Icon(CupertinoIcons.minus),
+              startIcon: Icon(CupertinoIcons.volume_down),
+              endIcon: Icon(CupertinoIcons.volume_up),
               centerIcon: Text('Center'),
-              endIcon: Icon(CupertinoIcons.plus),
+            ),
+            InteractiveSlider(
+              iconPosition: IconPosition.inside,
+              startIcon: Icon(CupertinoIcons.volume_down),
+              endIcon: Icon(CupertinoIcons.volume_up),
+              centerIcon: Text('Center'),
+              unfocusedHeight: 40,
+              focusedHeight: 50,
+              iconGap: 16,
+            ),
+            Divider(),
+            InteractiveSlider(
+              unfocusedHeight: 30,
+              focusedHeight: 40,
+            ),
+            InteractiveSlider(
+              unfocusedHeight: 30,
+              focusedHeight: 40,
               shapeBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
-              iconPosition: IconPosition.inside,
-              focusedHeight: 45,
-              unfocusedHeight: 35,
             ),
-            const InteractiveSlider(
-              startIcon: Icon(CupertinoIcons.minus),
-              endIcon: Icon(CupertinoIcons.plus),
-              iconPosition: IconPosition.inside,
-              unfocusedOpacity: 1.0,
-              unfocusedHeight: 50,
-              focusedHeight: 60,
-              foregroundColor: Colors.white,
-              gradient: LinearGradient(
-                colors: [Colors.blue, Colors.purple],
+            InteractiveSlider(
+              unfocusedHeight: 30,
+              focusedHeight: 40,
+              shapeBorder: BeveledRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
+            ),
+            Divider(),
+            InteractiveSlider(
+              unfocusedOpacity: 1,
+              unfocusedHeight: 30,
+              focusedHeight: 40,
+              foregroundColor: Colors.deepPurple,
+            ),
+            InteractiveSlider(
+              unfocusedOpacity: 1,
+              unfocusedHeight: 30,
+              focusedHeight: 40,
+              gradient: LinearGradient(colors: [Colors.green, Colors.red]),
+            ),
+            InteractiveSlider(
+              unfocusedOpacity: 1,
+              unfocusedHeight: 30,
+              focusedHeight: 40,
+              gradient: LinearGradient(colors: [Colors.green, Colors.red]),
+              gradientSize: GradientSize.progressWidth,
             ),
           ],
         ),
