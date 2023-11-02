@@ -1,3 +1,8 @@
+## v0.2.0
+
+* Adds gradient progress bar option
+* Adds icon builders tied to slider progress
+
 ## v0.1.1
 
 * Adds the option to place icons inside the slider bar
