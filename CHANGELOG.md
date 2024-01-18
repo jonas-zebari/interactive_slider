@@ -1,3 +1,7 @@
+## v0.2.2
+
+* Adds additional example case to show a controller being used
+
 ## v0.2.1
 
 * Fixes documentation
