@@ -1,3 +1,8 @@
+## v0.3.0
+
+* Adds [enabled] flag to block user input
+* Adds [disabledOpacity] to customize disabled state
+
 ## v0.2.2
 
 * Adds additional example case to show a controller being used
