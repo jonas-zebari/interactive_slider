@@ -81,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const Divider(),
           const InteractiveSlider(
+            enabled: true,
             startIcon: Icon(CupertinoIcons.volume_down),
             endIcon: Icon(CupertinoIcons.volume_up),
           ),

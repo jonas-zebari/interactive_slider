@@ -57,6 +57,8 @@ class InteractiveSlider extends StatefulWidget {
     this.startIconBuilder,
     this.centerIconBuilder,
     this.endIconBuilder,
+    this.enabled = true,
+    this.disabledOpacity = 0.5,
   })  : unfocusedOpacity = unfocusedOpacity ??
             (iconPosition == IconPosition.inside ? 1.0 : 0.4),
         assert(transitionCurvePeriod > 0.0),
@@ -165,6 +167,12 @@ class InteractiveSlider extends StatefulWidget {
 
   /// Widget builder to run when slider progress is updated
   final ValueWidgetBuilder<double>? endIconBuilder;
+
+  /// Sets whether the slider will register gesture events or not
+  final bool enabled;
+
+  /// Opacity of the slider and labels when [enabled] is false
+  final double disabledOpacity;
 
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
@@ -339,83 +347,93 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         ],
       );
     }
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragStart: (details) {
-        if (!mounted) return;
-        _height.value = widget.focusedHeight;
-        _opacity.value = 1.0;
-        _margin.value = widget.focusedMargin;
-      },
-      onHorizontalDragEnd: (details) {
-        if (!mounted) return;
-        _height.value = widget.unfocusedHeight;
-        _opacity.value = widget.unfocusedOpacity;
-        _margin.value = widget.unfocusedMargin;
-        widget.onProgressUpdated?.call(_progress.value);
-      },
-      onHorizontalDragUpdate: (details) {
-        if (!mounted) return;
-        final renderBox = context.findRenderObject() as RenderBox;
-        var sliderWidth = renderBox.size.width - widget.padding.horizontal;
-        if (widget.iconPosition == IconPosition.inline) {
-          final startIconRenderBox =
-              _startIconKey.currentContext?.findRenderObject() as RenderBox?;
-          final endIconRenderBox =
-              _endIconKey.currentContext?.findRenderObject() as RenderBox?;
-          final startIconWidth = startIconRenderBox?.size.width;
-          final endIconWidth = endIconRenderBox?.size.width;
-          if (startIconWidth != null) {
-            sliderWidth -= startIconWidth;
-          }
-          if (endIconWidth != null) {
-            sliderWidth -= endIconWidth;
-          }
-          sliderWidth -= widget.iconGap * 2;
-        }
-        _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
-            .clamp(0.0, 1.0);
-      },
-      child: IconTheme(
-        data: theme.iconTheme.copyWith(
-          color: widget.iconColor ?? widget.foregroundColor ?? innerChildColor,
-          size: widget.iconSize,
-        ),
-        child: DefaultTextStyle(
-          style: textStyle.copyWith(
-            color: widget.foregroundColor ?? innerChildColor,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Visibility.maintain(
-                visible: false,
-                child: _Prototype(
-                  padding: widget.padding,
-                  height: widget.focusedHeight * _maxSizeFactor,
-                  iconGap: widget.iconGap,
-                  startIcon: widget.startIcon ?? const SizedBox.shrink(),
-                  centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
-                  endIcon: widget.endIcon ?? const SizedBox.shrink(),
-                  iconPosition: widget.iconPosition,
-                ),
+    return AnimatedOpacity(
+      curve: Curves.ease,
+      duration: const Duration(milliseconds: 300),
+      opacity: widget.enabled ? 1.0 : widget.disabledOpacity,
+      child: IgnorePointer(
+        ignoring: !widget.enabled,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragStart: (details) {
+            if (!mounted) return;
+            _height.value = widget.focusedHeight;
+            _opacity.value = 1.0;
+            _margin.value = widget.focusedMargin;
+          },
+          onHorizontalDragEnd: (details) {
+            if (!mounted) return;
+            _height.value = widget.unfocusedHeight;
+            _opacity.value = widget.unfocusedOpacity;
+            _margin.value = widget.unfocusedMargin;
+            widget.onProgressUpdated?.call(_progress.value);
+          },
+          onHorizontalDragUpdate: (details) {
+            if (!mounted) return;
+            final renderBox = context.findRenderObject() as RenderBox;
+            var sliderWidth = renderBox.size.width - widget.padding.horizontal;
+            if (widget.iconPosition == IconPosition.inline) {
+              final startIconRenderBox = _startIconKey.currentContext
+                  ?.findRenderObject() as RenderBox?;
+              final endIconRenderBox =
+                  _endIconKey.currentContext?.findRenderObject() as RenderBox?;
+              final startIconWidth = startIconRenderBox?.size.width;
+              final endIconWidth = endIconRenderBox?.size.width;
+              if (startIconWidth != null) {
+                sliderWidth -= startIconWidth;
+              }
+              if (endIconWidth != null) {
+                sliderWidth -= endIconWidth;
+              }
+              sliderWidth -= widget.iconGap * 2;
+            }
+            _progress.value =
+                (_progress.value + (details.delta.dx / sliderWidth))
+                    .clamp(0.0, 1.0);
+          },
+          child: IconTheme(
+            data: theme.iconTheme.copyWith(
+              color:
+                  widget.iconColor ?? widget.foregroundColor ?? innerChildColor,
+              size: widget.iconSize,
+            ),
+            child: DefaultTextStyle(
+              style: textStyle.copyWith(
+                color: widget.foregroundColor ?? innerChildColor,
               ),
-              Padding(
-                padding: widget.padding,
-                child: ValueListenableBuilder<EdgeInsets>(
-                  valueListenable: _margin,
-                  child: slider,
-                  builder: (context, margin, child) {
-                    return AnimatedPadding(
-                      duration: widget.transitionDuration,
-                      curve: _transitionCurve,
-                      padding: margin,
-                      child: child,
-                    );
-                  },
-                ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Visibility.maintain(
+                    visible: false,
+                    child: _Prototype(
+                      padding: widget.padding,
+                      height: widget.focusedHeight * _maxSizeFactor,
+                      iconGap: widget.iconGap,
+                      startIcon: widget.startIcon ?? const SizedBox.shrink(),
+                      centerIcon: widget.centerIcon ?? const SizedBox.shrink(),
+                      endIcon: widget.endIcon ?? const SizedBox.shrink(),
+                      iconPosition: widget.iconPosition,
+                    ),
+                  ),
+                  Padding(
+                    padding: widget.padding,
+                    child: ValueListenableBuilder<EdgeInsets>(
+                      valueListenable: _margin,
+                      child: slider,
+                      builder: (context, margin, child) {
+                        return AnimatedPadding(
+                          duration: widget.transitionDuration,
+                          curve: _transitionCurve,
+                          padding: margin,
+                          child: child,
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
