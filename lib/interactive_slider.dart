@@ -59,6 +59,9 @@ class InteractiveSlider extends StatefulWidget {
     this.endIconBuilder,
     this.enabled = true,
     this.disabledOpacity = 0.5,
+    this.numberOfSegments,
+    this.segmentDividerColor = Colors.grey,
+    this.segmentDividerWidth = 1.0,
   })  : unfocusedOpacity = unfocusedOpacity ??
             (iconPosition == IconPosition.inside ? 1.0 : 0.4),
         assert(transitionCurvePeriod > 0.0),
@@ -174,6 +177,16 @@ class InteractiveSlider extends StatefulWidget {
   /// Opacity of the slider and labels when [enabled] is false
   final double disabledOpacity;
 
+  /// Turns the continuous slider into a segmented slider with the given
+  /// [numberOfSegments]
+  final int? numberOfSegments;
+
+  /// The color of each vertical divider which separates each segment
+  final Color segmentDividerColor;
+
+  /// The thickness of each vertical divider which separates each segment
+  final double segmentDividerWidth;
+
   @override
   State<InteractiveSlider> createState() => _InteractiveSliderState();
 }
@@ -284,6 +297,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
             color: widget.foregroundColor ?? brightnessColor,
             gradient: widget.gradient,
             gradientSize: widget.gradientSize,
+            numberOfSegments: widget.numberOfSegments,
+            segmentDividerColor: widget.segmentDividerColor,
+            segmentDividerWidth: widget.segmentDividerWidth,
           ),
           child: switch (widget.iconPosition) {
             IconPosition.inside => Padding(
@@ -355,19 +371,10 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         ignoring: !widget.enabled,
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onHorizontalDragStart: (details) {
-            if (!mounted) return;
-            _height.value = widget.focusedHeight;
-            _opacity.value = 1.0;
-            _margin.value = widget.focusedMargin;
-          },
-          onHorizontalDragEnd: (details) {
-            if (!mounted) return;
-            _height.value = widget.unfocusedHeight;
-            _opacity.value = widget.unfocusedOpacity;
-            _margin.value = widget.unfocusedMargin;
-            widget.onProgressUpdated?.call(_progress.value);
-          },
+          onHorizontalDragDown: (_) => _dragStart(),
+          onHorizontalDragStart: (_) => _dragStart(),
+          onHorizontalDragEnd: (_) => _dragStop(),
+          onHorizontalDragCancel: _dragStop,
           onHorizontalDragUpdate: (details) {
             if (!mounted) return;
             final renderBox = context.findRenderObject() as RenderBox;
@@ -440,6 +447,26 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     );
   }
 
+  void _dragStart() {
+    if (!mounted) return;
+    _height.value = widget.focusedHeight;
+    _opacity.value = 1.0;
+    _margin.value = widget.focusedMargin;
+  }
+
+  void _dragStop() {
+    if (!mounted) return;
+    _height.value = widget.unfocusedHeight;
+    _opacity.value = widget.unfocusedOpacity;
+    _margin.value = widget.unfocusedMargin;
+    if (widget.numberOfSegments case int numberOfSegments) {
+      widget.onProgressUpdated
+          ?.call(_adjustedSegmentedProgress(numberOfSegments));
+    } else {
+      widget.onProgressUpdated?.call(_adjustedProgress);
+    }
+  }
+
   Widget _opacityBuilder(BuildContext context, double opacity, Widget? child) {
     return AnimatedOpacity(
       opacity: opacity,
@@ -457,8 +484,22 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     );
   }
 
-  void _onChanged() => widget.onChanged?.call(
-      lerpDouble(widget.min, widget.max, _progress.value) ?? _progress.value);
+  void _onChanged() {
+    final progress = switch (widget.numberOfSegments) {
+      int numberOfSegments => _adjustedSegmentedProgress(numberOfSegments),
+      _ => _adjustedProgress,
+    };
+    widget.onChanged?.call(progress);
+  }
+
+  double get _adjustedProgress =>
+      lerpDouble(widget.min, widget.max, _progress.value) ?? _progress.value;
+
+  double _adjustedSegmentedProgress(int numberOfSegments) {
+    final segment = (_progress.value * numberOfSegments).round();
+    final step = (widget.max - widget.min) / numberOfSegments;
+    return (segment * step) + widget.min;
+  }
 
   void _updateCurveInfo() {
     _transitionCurve = ElasticOutCurve(widget.transitionCurvePeriod);

@@ -1,3 +1,11 @@
+## v0.4.0
+
+* Adds segmentation controls
+  * Easily control the number of discrete segments
+  * The color of segment dividers
+  * The thickness of segment dividers
+* Fixes a bug where the slider would not enlarge until horizontal movement was detected, which was inconsistent with Apple's sliders
+
 ## v0.3.0
 
 * Adds [enabled] flag to block user input

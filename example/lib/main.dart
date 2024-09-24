@@ -104,6 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const InteractiveSlider(
             unfocusedHeight: 30,
             focusedHeight: 40,
+            numberOfSegments: 7,
           ),
           const InteractiveSlider(
             unfocusedHeight: 30,

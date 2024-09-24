@@ -11,7 +11,7 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-A continuous slider widget inspired by the volume slider in the Apple Music app. This widget can
+A continuous or segmented slider widget inspired by the volume slider in the Apple Music app. This widget can
 be used with little to no setup but is still fully customizable!
 
 <img height="250" src="https://github.com/jonas-zebari/interactive_slider/blob/main/pub/icons.gif?raw=true" alt="Animated gif of slider being used">
@@ -29,6 +29,7 @@ Use the stock slider or customize:
 * Use the normalized progress value or easily provide a min/max to be automatically transformed
 * Animate start and end icons using slider progress
 * Color the slider's porgress with a gradient
+* Create any number of discrete segments to slide through
 
 ## Getting started
 
@@ -36,7 +37,7 @@ Add to your dependencies:
 
 ```yaml
 dependencies:
-  interactive_slider: ^0.2.1
+  interactive_slider: ^0.4.0
 ```
 
 Then import:
