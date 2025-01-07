@@ -195,12 +195,13 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _margin = ValueNotifier(widget.unfocusedMargin);
-  late final _progress =
-      widget.controller ?? ValueNotifier(widget.initialProgress);
+  late final _defaultProgress = ValueNotifier(widget.initialProgress);
   final _startIconKey = GlobalKey();
   final _endIconKey = GlobalKey();
   late ElasticOutCurve _transitionCurve;
   late double _maxSizeFactor;
+
+  ValueNotifier<double> get _progress => widget.controller ?? _defaultProgress;
 
   List<Widget> get _iconChildren {
     return [
@@ -242,6 +243,14 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
 
   @override
   void didUpdateWidget(InteractiveSlider oldWidget) {
+    if (widget.controller != oldWidget.controller) {
+      if (oldWidget.controller != null) {
+        oldWidget.controller!.removeListener(_onChanged);
+      }
+      if (widget.controller != null) {
+        widget.controller!.addListener(_onChanged);
+      }
+    }
     super.didUpdateWidget(oldWidget);
     _updateCurveInfo();
   }
@@ -250,7 +259,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   void dispose() {
     _height.dispose();
     _opacity.dispose();
-    _progress.dispose();
+    _defaultProgress.dispose();
     super.dispose();
   }
 
