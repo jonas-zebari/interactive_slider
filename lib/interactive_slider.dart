@@ -42,6 +42,7 @@ class InteractiveSlider extends StatefulWidget {
     this.initialProgress = 0.0,
     this.onChanged,
     this.onProgressUpdated,
+    this.onFocused,
     this.iconGap = 8.0,
     this.iconCrossAxisAlignment = CrossAxisAlignment.center,
     this.style,
@@ -118,6 +119,9 @@ class InteractiveSlider extends StatefulWidget {
   /// A callback that provides the transformed slider progress (if min and max
   /// are set)
   final ValueChanged<double>? onChanged;
+
+  /// A callback that runs when the user starts interacting with the slider
+  final ValueChanged<double>? onFocused;
 
   /// A callback that runs when the user finishes updating the slider's progress
   final ValueChanged<double>? onProgressUpdated;
@@ -461,6 +465,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
     _height.value = widget.focusedHeight;
     _opacity.value = 1.0;
     _margin.value = widget.focusedMargin;
+    widget.onFocused?.call(_progress.value);
   }
 
   void _dragStop() {
