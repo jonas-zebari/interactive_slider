@@ -1,3 +1,7 @@
+## v0.5.0
+* Adds onFocused callback that fires when the user starts an interaction (elliothux)
+* Fixes a bug where externally supplied controllers were being disposed of too soon (valentingrigorean)
+
 ## v0.4.0
 
 * Adds segmentation controls
