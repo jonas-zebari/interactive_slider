@@ -1,4 +1,4 @@
-library interactive_slider;
+library;
 
 import 'dart:ui';
 
@@ -296,7 +296,8 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
           curve: _transitionCurve,
           decoration: ShapeDecoration(
             shape: widget.shapeBorder,
-            color: widget.backgroundColor ?? brightnessColor.withOpacity(0.12),
+            color: widget.backgroundColor ??
+                brightnessColor.withValues(alpha: 0.12),
           ),
           child: child,
         );

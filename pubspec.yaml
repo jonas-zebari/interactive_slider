@@ -1,6 +1,6 @@
 name: interactive_slider
 description: A Cupertino-themed interactive continuous slider widget that is inspired by the slider widgets used in Apple Music.
-version: 0.5.0
+version: 0.5.1
 repository: https://github.com/jonas-zebari/interactive_slider
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
